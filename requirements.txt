@@ -1,0 +1,8 @@
+torch == 2.1.2+cu118
+ftfy == 6.3.1
+mmdet >= 3.0.0rc4
+openmim == 0.3.9
+mmengine == 0.10.5
+mmsegmentation == 1.2.2
+mmcv == 2.1.0
+timm == 0.6.11
