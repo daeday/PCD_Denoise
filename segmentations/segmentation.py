@@ -20,22 +20,23 @@ from utils import *
 
 import argparse
 
-## Take parameters
-parser = argparse.ArgumentParser()
-parser.add_argument("--model", default='BEiT_ADE')
-parser.add_argument("--path", required=True) 
+# ## Take parameters
+# parser = argparse.ArgumentParser()
+# parser.add_argument("--model", default='BEiT_ADE')
+# parser.add_argument("--path", required=True) 
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
-model_list= {'DeepLab_ADE':'deeplabv3plus_r101-d8_4xb4-160k_ade20k-512x512',
-            'DeepLab_VOC':'deeplabv3plus_r101-d8_4xb4-40k_voc12aug-512x512',
-            'BEiT_ADE':'beit-large_upernet_8xb1-amp-160k_ade20k-640x640',
-            'SAN_COCO':'san-vit-l14_coco-stuff164k-640x640',
-            'Segformer_ADE':'segformer_mit-b5_8xb2-160k_ade20k-640x640'}
-
-def segmentation_img(im_path=args.path, model_name = args.model):
+def segmentation_img(args):
+    model_list= {'DeepLab_ADE':'deeplabv3plus_r101-d8_4xb4-160k_ade20k-512x512',
+                'DeepLab_VOC':'deeplabv3plus_r101-d8_4xb4-40k_voc12aug-512x512',
+                'BEiT_ADE':'beit-large_upernet_8xb1-amp-160k_ade20k-640x640',
+                'SAN_COCO':'san-vit-l14_coco-stuff164k-640x640',
+                'Segformer_ADE':'segformer_mit-b5_8xb2-160k_ade20k-640x640'}
+    image_path = args.img_path
+    model_name = args.model
+    
     inferencer = MMSegInferencer(model=model_list[model_name])
-    image_path = im_path
     inference_image = inferencer(image_path)['predictions']
 
     if model_name in ['DeepLab_ADE', 'BEiT_ADE', 'Segformer_ADE']:
@@ -47,6 +48,6 @@ def segmentation_img(im_path=args.path, model_name = args.model):
     human_image = person_extractor(inference_image, person_label=person_label)
     return human_image
 
-if __name__ == '__main__':
-    out_img = segmentation_img(args)
-    cv2.imwrite('output_image.png')
+# if __name__ == '__main__':
+#     out_img = segmentation_img(args)
+#     cv2.imwrite('output_image.png')

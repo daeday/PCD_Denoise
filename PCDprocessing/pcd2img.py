@@ -2,15 +2,16 @@ import e57
 import numpy as np
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--pcd_path", required=True) 
-parser.add_argument("--img_height", default=512)
-parser.add_argument("--img_width", default=1024)
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument("--pcd_path", default='data.e57') 
+# parser.add_argument("--img_height", default=512)
+# parser.add_argument("--img_width", default=1024)
+# args = parser.parse_args()
 
+## Required: pcd_path, img_height, img_width
 def project_PCD2ERP(args):
     pcd = e57.read_points(args.pcd_path)
-    rgb_pcd = np.concatenate((pcd.points, np.array(pcd.color*255,dtype=np.int8())),axis=1)
+    rgb_pcd = np.concatenate((pcd.points, np.array(pcd.color*255,dtype=np.uint8())),axis=1)
     prj_img = np.zeros((args.img_height, args.img_width, 3), dtype=np.uint8)
 
     # 포인트 위치와 RGB 값 분리
@@ -33,9 +34,10 @@ def project_PCD2ERP(args):
     v = np.clip(v, 0, args.img_height - 1)
 
     # 각 픽셀에 RGB 값을 매핑
-    for i in range(len(rgb_pcd)):
-        prj_img[v[i], u[i]] = rgb[i]
+    prj_img[v, u] = rgb
+    # for i in range(len(rgb_pcd)):
+    #     prj_img[v[i], u[i]] = rgb[i]
     return prj_img
 
-if __name__ == '__main__':
-    project_PCD2ERP(args)
+# if __name__ == '__main__':
+#     project_PCD2ERP(args)

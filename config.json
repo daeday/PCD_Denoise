@@ -1,0 +1,8 @@
+{
+    "model": "BEiT_ADE",
+    "pcd_path": "../../data/BLKARC-2050377-8.e57",
+    "img_width": 1024,
+    "img_height": 512,
+    "output_path": "/path/to/output/files",
+    "log_path": "/path/to/log/files"
+  }
