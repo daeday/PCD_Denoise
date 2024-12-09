@@ -7,6 +7,7 @@ import os
 
 import argparse
 from argparse import Namespace
+from pyinpaint import Inpaint
 
 # parser = argparse.ArgumentParser()
 # parser.add_argument("--model", default='BEiT_ADE')
@@ -44,6 +45,8 @@ if __name__ == '__main__':
     cv2.imwrite('./temp/temp_mask.jpg',conversed_mask)
 
     ## Inpaint human area
-
+    inpaint = Inpaint('./temp/temp_img.jpg','./temp/temp_mask.jpg')
+    inpainted_img = inpaint()
+    cv2.imwrite('./temp/temp_inpainted.jpg', inpainted_img*255)
     ## ERP projection on PCD 
     recon_pcd = project_ERP_to_PCD(args, erp_img)
