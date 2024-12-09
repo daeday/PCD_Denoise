@@ -16,7 +16,7 @@ from skimage.filters import gaussian
 from skimage.segmentation import active_contour
 from skimage.util import invert
 
-from utils import *
+from segmentations.utils import *
 
 
 if __name__ == "__main__":

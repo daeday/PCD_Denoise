@@ -15,7 +15,7 @@ from skimage.filters import gaussian
 from skimage.segmentation import active_contour
 from skimage.util import invert
 
-from utils import *
+from segmentations.utils import *
 
 
 img_train_path = "ADEChallengeData2016/images/training/*.*"
