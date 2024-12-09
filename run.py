@@ -40,6 +40,7 @@ if __name__ == '__main__':
 
     ## Segmentation on ERP image
     human_mask = segmentation_img('./temp/temp_img.jpg', args)
+    conversed_mask = mask_conversion(human_mask)
 
     ## Inpaint human area
 
