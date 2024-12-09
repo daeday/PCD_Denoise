@@ -1,4 +1,4 @@
-from segmentations.segmentation import segmentation_img
+from segmentations.segmentation import segmentation_img, mask_conversion
 from PCDprocessing.pcd2img import project_PCD2ERP
 from PCDprocessing.img2pcd import project_ERP_to_PCD
 import cv2

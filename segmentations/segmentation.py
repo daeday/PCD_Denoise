@@ -16,7 +16,7 @@ import pandas as pd
 # from skimage.segmentation import active_contour
 # from skimage.util import invert
 
-from utils import *
+from segmentations.utils import *
 
 import argparse
 
@@ -27,13 +27,13 @@ import argparse
 
 # args = parser.parse_args()
 
-def segmentation_img(args):
+def segmentation_img(img_path, args):
     model_list= {'DeepLab_ADE':'deeplabv3plus_r101-d8_4xb4-160k_ade20k-512x512',
                 'DeepLab_VOC':'deeplabv3plus_r101-d8_4xb4-40k_voc12aug-512x512',
                 'BEiT_ADE':'beit-large_upernet_8xb1-amp-160k_ade20k-640x640',
                 'SAN_COCO':'san-vit-l14_coco-stuff164k-640x640',
                 'Segformer_ADE':'segformer_mit-b5_8xb2-160k_ade20k-640x640'}
-    image_path = args.img_path
+    image_path = img_path
     model_name = args.model
     
     inferencer = MMSegInferencer(model=model_list[model_name])
@@ -47,6 +47,19 @@ def segmentation_img(args):
         person_label = 0
     human_image = person_extractor(inference_image, person_label=person_label)
     return human_image
+
+def mask_conversion(mask):
+    org_mask = mask
+    new_mask = np.zeros(np.shape(org_mask))
+    for h in range(len(org_mask)):
+        for w in range(len(org_mask[h])):
+            if org_mask[h][w] == 0:
+                new_mask[h][w] = np.uint8(255)
+            else:
+                new_mask[h][w] = np.uint8(0)
+    # new_mask = new_mask[:,:,np.newaxis]
+    new_mask = cv2.merge([new_mask, new_mask, new_mask])
+    return new_mask
 
 # if __name__ == '__main__':
 #     out_img = segmentation_img(args)
