@@ -6,6 +6,7 @@ import json
 import os
 
 import argparse
+import numpy as np
 from argparse import Namespace
 from pyinpaint import Inpaint
 
@@ -44,9 +45,23 @@ if __name__ == '__main__':
     conversed_mask = mask_conversion(human_mask)
     cv2.imwrite('./temp/temp_mask.jpg',conversed_mask)
 
-    ## Inpaint human area
-    inpaint = Inpaint('./temp/temp_img.jpg','./temp/temp_mask.jpg')
-    inpainted_img = inpaint()
-    cv2.imwrite('./temp/temp_inpainted.jpg', inpainted_img*255)
     ## ERP projection on PCD 
-    recon_pcd = project_ERP_to_PCD(args, erp_img)
+    masked_erp_img = erp_img
+    for height in range(len(human_mask)):
+        for width in range(len(human_mask[height])):
+            if human_mask[height][width] != 0:
+                ## Masking color = [255,1,1]
+                masked_erp_img[height][width] = np.array([255,1,1], dtype=np.uint8)
+    seg_pcd = project_ERP_to_PCD(args, masked_erp_img)
+
+    ## Multiple PCD registration
+    # ICP
+    # ISS3D, SIFT3D (Feature extraction) + FPFH (Fast Point Feature Histogram) + RANSAC + ICP
+
+
+    # ## Inpaint human area
+    # inpaint = Inpaint('./temp/temp_img.jpg','./temp/temp_mask.jpg')
+    # inpainted_img = inpaint()
+    # cv2.imwrite('./temp/temp_inpainted.jpg', inpainted_img*255)
+
+    
