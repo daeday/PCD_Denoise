@@ -48,6 +48,13 @@ def segmentation_img(img_path, args):
     human_image = person_extractor(inference_image, person_label=person_label)
     return human_image
 
+def human_labeling(origin_img, mask_img, mask_color=(255,1,1)):
+    for h in range(len(mask_img)):
+        for w in range(len(mask_img[h])):
+            if mask_img[h][w]==1:
+                origin_img[h][w]=mask_color
+    return origin_img
+
 def mask_conversion(mask):
     org_mask = mask
     new_mask = np.zeros(np.shape(org_mask))
