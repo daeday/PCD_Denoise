@@ -1,9 +1,12 @@
 import os
-
 import matplotlib.pyplot as plt
 import open3d
+import cv2
+from segmentations.segmentation import human_labeling
+import open3d as o3d
+import argparse
 
-from utils import *
+from PCDprocessing.utils import *
 
 
 def render_image_with_boxes(img, objects, calib):
@@ -24,7 +27,6 @@ def render_image_with_boxes(img, objects, calib):
     plt.yticks([])
     plt.xticks([])
     plt.show()
-
 
 def render_lidar_with_boxes(pc_velo, objects, calib, img_width, img_height):
     # projection matrix (project from velo2cam2)
@@ -71,7 +73,6 @@ def render_lidar_with_boxes(pc_velo, objects, calib, img_width, img_height):
                                          zoom=0.33799
                                          )
 
-
 def render_lidar_on_image(pts_velo, img, calib, img_width, img_height):
     # projection matrix (project from velo2cam2)
     proj_velo2cam2 = project_velo_to_cam2(calib)
@@ -107,6 +108,121 @@ def render_lidar_on_image(pts_velo, img, calib, img_width, img_height):
     plt.xticks([])
     plt.show()
     return img
+
+def RGB_mapping2pcd(binary, origin_img, mask_img, P2, Tr, coloring=False, erase=False):
+    # read raw data from binary
+    scan = np.fromfile(binary, dtype=np.float32).reshape((-1, 4))
+    points = scan[:, 0:3]  # lidar xyz (front, left, up)
+
+    # Apply projection matrix
+    velo = np.insert(points, 3, 1, axis=1).T
+    cam = P2.dot(Tr.dot(velo))
+    cam[:2] /= cam[2, :]
+
+    # Preparation on image
+    plt.figure(figsize=(12, 5), dpi=96, tight_layout=True)
+    if coloring:
+        label_color = (255,1,1)
+        png = human_labeling(origin_img, mask_img, mask_color=label_color)
+    else:
+        png = origin_img
+    IMG_H, IMG_W, _ = png.shape
+    plt.axis([0, IMG_W, IMG_H, 0])
+
+    # Filter point out of canvas
+    u, v, z = cam
+    u_out = np.logical_or(u < 0, u > IMG_W)
+    v_out = np.logical_or(v < 0, v > IMG_H)
+    outlier = np.logical_or(u_out, v_out)
+
+    # generate color map from depth
+    u, v, z = cam
+
+    # Adding rgb data
+    rgb_values = []
+    for u_coord, v_coord, z_coord in zip(u, v, z):
+        u_int, v_int = int(round(u_coord)), int(round(v_coord))
+        if z_coord >= 0:
+            if 0 <= u_int < IMG_W and 0 <= v_int < IMG_H:
+                rgb_value = png[v_int, u_int]
+                rgb_values.append(rgb_value)
+            else:
+                rgb_values.append((0, 0, 0))
+        else:
+            rgb_values.append((0, 0, 0))
+    
+    if coloring:
+        ## Erase colored points
+        erase_idx = []
+        for idx, rgb in enumerate(rgb_values):
+            if np.array_equal(rgb,label_color):
+                erase_idx.append(idx)
+        if erase:
+            points = np.delete(points,erase_idx,axis=0)
+            rgb_values = np.delete(rgb_values, erase_idx,axis=0)
+            rgb_values = np.array(rgb_values)/255.
+            u = np.delete(u, erase_idx)
+            v = np.delete(v, erase_idx)
+    else:
+        erase_idx = []
+    rgb_values = np.array(rgb_values)/255.
+    
+    # Create Open3D point cloud
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(points)
+    point_cloud.colors = o3d.utility.Vector3dVector(rgb_values)
+
+    return point_cloud, (u,v), rgb_values, erase_idx
+def label_coloring2pcd(binary, origin_img, P2, Tr, labels, Person_label):
+    # read raw data from binary
+    scan = np.fromfile(binary, dtype=np.float32).reshape((-1, 4))
+    points = scan[:, 0:3]  # lidar xyz (front, left, up)
+
+    # Apply projection matrix
+    velo = np.insert(points, 3, 1, axis=1).T
+    cam = P2.dot(Tr.dot(velo))
+    cam[:2] /= cam[2, :]
+
+    # Preparation on image
+    plt.figure(figsize=(12, 5), dpi=96, tight_layout=True)
+    label_color = (255,1,1)
+    png = origin_img
+    IMG_H, IMG_W, _ = png.shape
+    plt.axis([0, IMG_W, IMG_H, 0])
+
+    # Filter point out of canvas
+    u, v, z = cam
+    u_out = np.logical_or(u < 0, u > IMG_W)
+    v_out = np.logical_or(v < 0, v > IMG_H)
+    outlier = np.logical_or(u_out, v_out)
+
+    # generate color map from depth
+    u, v, z = cam
+
+    # Adding rgb data
+    rgb_values = []
+    for u_coord, v_coord, z_coord in zip(u, v, z):
+        u_int, v_int = int(round(u_coord)), int(round(v_coord))
+        if z_coord >= 0:
+            if 0 <= u_int < IMG_W and 0 <= v_int < IMG_H:
+                rgb_value = png[v_int, u_int]
+                rgb_values.append(rgb_value)
+            else:
+                rgb_values.append((0, 0, 0))
+        else:
+            rgb_values.append((0, 0, 0))
+    
+    for idx, tmp_lbl in enumerate(labels):
+        if tmp_lbl == Person_label:
+            rgb_values[idx] = label_color
+    rgb_values = np.array(rgb_values)/255.
+    
+    # Create Open3D point cloud
+    point_cloud = o3d.geometry.PointCloud()
+    point_cloud.points = o3d.utility.Vector3dVector(points)
+    point_cloud.colors = o3d.utility.Vector3dVector(rgb_values)
+
+    return point_cloud, (u,v), rgb_values
 
 
 if __name__ == '__main__':
