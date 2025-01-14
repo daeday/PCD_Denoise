@@ -1,8 +1,12 @@
 {
     "model": "BEiT_ADE",
-    "pcd_path": "../data/BLKARC-2050377-9.e57",
-    "img_width": 1024,
-    "img_height": 512,
-    "output_path": "/path/to/output/files",
-    "log_path": "/path/to/log/files"
+    "pcd_path": "./../daeyoung/SemanticKITTI/sequences/07/velodyne/*.bin",
+    "img2_path":"./../daeyoung/SemanticKITTI/sequences/07/image_2/*.png",
+    "img3_path":"./../daeyoung/SemanticKITTI/sequences/07/image_3/*.png",
+    "lbl_path":"./../daeyoung/SemanticKITTI/sequences/07/labels/*.label",
+    "calib_path":"./../daeyoung/SemanticKITTI/sequences/07/calib.txt",
+    "img_width":"1241",
+    "img_height":"376",
+    "output_path":"./../data/outputs/",
+    "log_path":"./path/to/log/files"
   }
